@@ -1,0 +1,60 @@
+{
+  "name": "Chip Industry Data Sync",
+  "nodes": [
+    {
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [100, 200],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "value": 6 }]
+        }
+      }
+    },
+    {
+      "name": "Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "position": [300, 200],
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "companies",
+        "returnAll": true
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credential-id",
+          "name": "Supabase Account"
+        }
+      }
+    },
+    {
+      "name": "Filter & Transform",
+      "type": "n8n-nodes-base.function",
+      "position": [500, 200],
+      "parameters": {
+        "functionCode": "// Transform and filter data\nconst items = $input.all();\nreturn items.map(item => ({\n  json: {\n    ...item.json,\n    processed_at: new Date().toISOString()\n  }\n}));"
+      }
+    },
+    {
+      "name": "Update Database",
+      "type": "n8n-nodes-base.supabase",
+      "position": [700, 200],
+      "parameters": {
+        "operation": "update",
+        "tableId": "companies",
+        "updateKey": "id"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [["Supabase"]]
+    },
+    "Supabase": {
+      "main": [["Filter & Transform"]]
+    },
+    "Filter & Transform": {
+      "main": [["Update Database"]]
+    }
+  }
+}

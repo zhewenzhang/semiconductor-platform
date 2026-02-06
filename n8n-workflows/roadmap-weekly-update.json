@@ -1,0 +1,85 @@
+{
+  "name": "Roadmap Weekly Update",
+  "nodes": [
+    {
+      "name": "Monday 10:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [100, 200],
+      "parameters": {
+        "rule": {
+          "cron": {
+            "expression": "0 10 * * 1"
+          }
+        }
+      }
+    },
+    {
+      "name": "Fetch Companies",
+      "type": "n8n-nodes-base.supabase",
+      "position": [300, 200],
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "companies",
+        "returnAll": true
+      }
+    },
+    {
+      "name": "For Each Company",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [500, 200],
+      "parameters": {
+        "batchSize": 1
+      }
+    },
+    {
+      "name": "Fetch Roadmap",
+      "type": "n8n-nodes-base.supabase",
+      "position": [700, 200],
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "roadmaps",
+        "filters": {
+          "company_id": "={{ $json.id }}"
+        }
+      }
+    },
+    {
+      "name": "Generate Report",
+      "type": "n8n-nodes-base.function",
+      "position": [900, 200],
+      "parameters": {
+        "functionCode": "// Generate weekly report\nconst items = $input.all();\nconst report = {\n  generated_at: new Date().toISOString(),\n  total_roadmaps: items.length,\n  by_status: {},\n  by_node: {}\n};\n\nitems.forEach(item => {\n  const status = item.json.status || 'unknown';\n  const node = item.json.node || 'unknown';\n  report.by_status[status] = (report.by_status[status] || 0) + 1;\n  report.by_node[node] = (report.by_node[node] || 0) + 1;\n});\n\nreturn { json: report };"
+      }
+    },
+    {
+      "name": "Save Report",
+      "type": "n8n-nodes-base.supabase",
+      "position": [1100, 200],
+      "parameters": {
+        "operation": "create",
+        "tableId": "insights",
+        "fields": {
+          "title": "Weekly Roadmap Update - {{ $now.toFormat('yyyy-MM-dd') }}",
+          "category": "report",
+          "content": "{{ $json }}",
+          "status": "published"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Monday 10:00": {
+      "main": [["Fetch Companies"]]
+    },
+    "Fetch Companies": {
+      "main": [["For Each Company"]]
+    },
+    "For Each Company": {
+      "main": [["Fetch Roadmap"], ["Save Report"]],
+      "main": [["Generate Report"]]
+    },
+    "Generate Report": {
+      "main": [["Save Report"]]
+    }
+  }
+}
