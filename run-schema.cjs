@@ -1,7 +1,7 @@
 const https = require('https');
 
 const projectRef = 'uwvlduprxppwdkjkvwby';
-const serviceRoleKey = 'sb_secret_zEZfMq-VroQO3ncNxaIMmg_vFetBpO5';
+const serviceRoleKey = '<YOUR_SERVICE_ROLE_KEY>';
 
 const sql = `
 -- Enable UUID extension

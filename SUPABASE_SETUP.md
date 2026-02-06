@@ -13,7 +13,7 @@ sb_publishable_NCyVuDM0d_Nkn50QvKdY-Q_OCQJsN5L
 
 ### Service Role Key（后端/管理使用）
 ```
-sb_secret_zEZfMq-VroQO3ncNxaIMmg_vFetBpO5
+<YOUR_SERVICE_ROLE_KEY>
 ```
 ⚠️ **仅在服务端使用，不要暴露到前端**
 
