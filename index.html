@@ -1,18 +1,350 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>芯片产业分析平台</title>
-    <!-- CSP: 允许同源脚本和 Supabase -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://*.supabase.co; connect-src 'self' https://*.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;">
-    <script type="module" crossorigin src="/semiconductor-platform/assets/index-Cv57ugkt.js"></script>
-    <link rel="modulepreload" crossorigin href="/semiconductor-platform/assets/vendor-qi6-FJ8y.js">
-    <link rel="modulepreload" crossorigin href="/semiconductor-platform/assets/antd-D8bGJmuC.js">
-    <link rel="stylesheet" crossorigin href="/semiconductor-platform/assets/index-F4NtWzN8.css">
-  </head>
-  <body class="dark">
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>芯片产业分析平台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 { font-size: 28px; margin-bottom: 8px; }
+    .header p { opacity: 0.9; }
+    
+    /* Nav */
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .nav a {
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .nav a:hover, .nav a.active { background: rgba(102,126,234,0.5); }
+    
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.05);
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .stat .num { font-size: 36px; font-weight: bold; color: #667eea; }
+    .stat .label { color: #888; margin-top: 8px; }
+    
+    /* Cards */
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .company {
+      background: rgba(255,255,255,0.03);
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .company:hover {
+      background: rgba(102,126,234,0.2);
+      transform: translateY(-2px);
+    }
+    .company h3 { color: #667eea; margin-bottom: 8px; }
+    .company p { color: #888; font-size: 14px; }
+    .tags { display: flex; gap: 8px; margin-top: 12px; }
+    .tag { background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    
+    /* Roadmap */
+    .roadmap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .roadmap .name { font-weight: 500; }
+    .roadmap .meta { display: flex; gap: 16px; color: #888; font-size: 14px; }
+    
+    .status { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .status-done { background: rgba(74,222,128,0.2); color: #4ade80; }
+    .status-ing { background: rgba(96,165,250,0.2); color: #60a5fa; }
+    .status-plan { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    
+    /* Company Detail */
+    .detail-header { display: flex; gap: 20px; align-items: center; margin-bottom: 24px; }
+    .detail-logo {
+      width: 80px;
+      height: 80px;
+      background: rgba(102,126,234,0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .back {
+      color: #667eea;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+    .back:hover { text-decoration: underline; }
+    
+    /* Filter */
+    .filter {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .filter button {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .filter button.active { background: #667eea; }
+    .filter button:hover { background: rgba(102,126,234,0.5); }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Home Page -->
+    <div id="page-home">
+      <div class="header">
+        <h1>芯片产业分析平台</h1>
+        <p>全球主要芯片公司产品路线图和制程演进</p>
+      </div>
+      
+      <div class="nav">
+        <a onclick="showPage('home')" class="active">首页</a>
+        <a onclick="showPage('companies')">公司库</a>
+        <a onclick="showPage('roadmap')">Roadmap</a>
+      </div>
+      
+      <div class="stats">
+        <div class="stat">
+          <div class="num">7</div>
+          <div class="label">家公司</div>
+        </div>
+        <div class="stat">
+          <div class="num">11</div>
+          <div class="label">条 Roadmap</div>
+        </div>
+        <div class="stat">
+          <div class="num">5</div>
+          <div class="label">AI 加速器</div>
+        </div>
+        <div class="stat">
+          <div class="num">3</div>
+          <div class="label">制程节点</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>主要公司</h2>
+        <div class="grid" id="company-grid"></div>
+      </div>
+      
+      <div class="card">
+        <h2>最新 Roadmap</h2>
+        <div id="recent-roadmaps"></div>
+      </div>
+    </div>
+    
+    <!-- Companies Page -->
+    <div id="page-companies" class="hidden">
+      <a onclick="showPage('home')" class="back">← 返回首页</a>
+      <div class="card">
+        <h2>公司库 (7 家)</h2>
+        <div class="grid" id="all-companies"></div>
+      </div>
+    </div>
+    
+    <!-- Roadmap Page -->
+    <div id="page-roadmap" class="hidden">
+      <a onclick="showPage('home')" class="back">← 返回首页</a>
+      <div class="card">
+        <h2>产品 Roadmap</h2>
+        <div class="filter">
+          <button onclick="filterRoadmap('all')" class="active" id="btn-all">全部</button>
+          <button onclick="filterRoadmap('CPU')" id="btn-cpu">CPU</button>
+          <button onclick="filterRoadmap('AI加速器')" id="btn-ai">AI加速器</button>
+          <button onclick="filterRoadmap('GPU')" id="btn-gpu">GPU</button>
+          <button onclick="filterRoadmap('制程节点')" id="btn-proc">制程节点</button>
+        </div>
+        <div id="roadmap-list"></div>
+      </div>
+    </div>
+    
+    <!-- Company Detail Page -->
+    <div id="page-detail" class="hidden">
+      <a onclick="showPage('companies')" class="back">← 返回公司列表</a>
+      <div class="card">
+        <div class="detail-header">
+          <div class="detail-logo" id="detail-logo"></div>
+          <div>
+            <h1 id="detail-name" style="margin-bottom: 8px;"></h1>
+            <p id="detail-desc" style="color: #888;"></p>
+            <div class="tags" id="detail-tags"></div>
+          </div>
+        </div>
+        <h2 id="detail-roadmap-title">产品 Roadmap</h2>
+        <div id="detail-roadmaps"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 数据
+    const companies = [
+      { id: 'amd', name: 'AMD', name_en: 'AMD', region: '美国', industry: '设计', desc: '超威半导体，全球领先的处理器和显卡制造商', initial: 'A' },
+      { id: 'intel', name: '英特尔', name_en: 'Intel', region: '美国', industry: '制造', desc: '全球最大的半导体公司，CPU 制造商', initial: 'I' },
+      { id: 'nvidia', name: '英伟达', name_en: 'NVIDIA', region: '美国', industry: '设计', desc: 'GPU 领导者，AI 芯片巨头', initial: 'N' },
+      { id: 'tsmc', name: '台积电', name_en: 'TSMC', region: '台湾', industry: '制造', desc: '全球最大晶圆代工厂', initial: 'T' },
+      { id: 'samsung', name: '三星电子', name_en: 'Samsung', region: '韩国', industry: '制造', desc: '综合半导体巨头，存储芯片领导者', initial: 'S' },
+      { id: 'qualcomm', name: '高通', name_en: 'Qualcomm', region: '美国', industry: '设计', desc: '移动芯片霸主，5G 领导者', initial: 'Q' },
+      { id: 'mediatek', name: '联发科', name_en: 'MediaTek', region: '台湾', industry: '设计', desc: '移动处理器第二大厂商', initial: 'M' },
+    ];
+    
+    const roadmaps = [
+      { company: 'amd', name: 'Ryzen 9000', line: 'CPU', proc: 'TSMC N4', year: 2024, status: 'done' },
+      { company: 'amd', name: 'MI300X', line: 'AI加速器', proc: 'TSMC N5', year: 2024, status: 'done' },
+      { company: 'amd', name: 'Radeon RX 8000', line: 'GPU', proc: 'TSMC N4', year: 2025, status: 'plan' },
+      { company: 'amd', name: 'Zen 5', line: 'CPU', proc: 'TSMC N3', year: 2024, status: 'ing' },
+      { company: 'intel', name: 'Core Ultra 200', line: 'CPU', proc: 'Intel 4', year: 2024, status: 'done' },
+      { company: 'intel', name: 'Gaudi 3', line: 'AI加速器', proc: 'TSMC N5', year: 2024, status: 'ing' },
+      { company: 'intel', name: 'Intel 20A', line: '制程节点', proc: 'Intel 20A', year: 2025, status: 'plan' },
+      { company: 'nvidia', name: 'H100', line: 'AI加速器', proc: 'TSMC N4', year: 2023, status: 'done' },
+      { company: 'nvidia', name: 'H200', line: 'AI加速器', proc: 'TSMC N4', year: 2024, status: 'done' },
+      { company: 'nvidia', name: 'B100', line: 'AI加速器', proc: 'TSMC N3', year: 2025, status: 'plan' },
+      { company: 'tsmc', name: 'N3E', line: '制程节点', proc: 'N3E', year: 2023, status: 'done' },
+      { company: 'tsmc', name: 'N2', line: '制程节点', proc: 'N2', year: 2025, status: 'ing' },
+    ];
+    
+    const statusText = { done: '已完成', ing: '进行中', plan: '规划中' };
+    const statusClass = { done: 'status-done', ing: 'status-ing', plan: 'status-plan' };
+    
+    // 渲染公司卡片
+    function renderCompany(c) {
+      const r = roadmaps.filter(r => r.company === c.id);
+      return `<div class="company" onclick="showCompany('${c.id}')">
+        <h3>${c.name}</h3>
+        <p>${c.desc}</p>
+        <div class="tags">
+          <span class="tag">${c.region}</span>
+          <span class="tag">${c.industry}</span>
+          <span class="tag">${r.length} 项</span>
+        </div>
+      </div>`;
+    }
+    
+    // 渲染 roadmap
+    function renderRoadmap(r) {
+      const c = companies.find(x => x.id === r.company);
+      return `<div class="roadmap" data-line="${r.line}">
+        <div>
+          <div class="name">${r.name}</div>
+          <div style="color: #888; font-size: 12px;">${c.name} · ${r.line}</div>
+        </div>
+        <div class="meta">
+          <span>${r.proc}</span>
+          <span>${r.year}</span>
+          <span class="status ${statusClass[r.status]}">${statusText[r.status]}</span>
+        </div>
+      </div>`;
+    }
+    
+    // 页面切换
+    function showPage(page) {
+      document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById('page-' + page).classList.remove('hidden');
+      document.querySelectorAll('.nav a').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+    
+    // 显示公司详情
+    function showCompany(id) {
+      const c = companies.find(x => x.id === id);
+      const r = roadmaps.filter(x => x.company === id);
+      
+      document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById('page-detail').classList.remove('hidden');
+      
+      document.getElementById('detail-logo').textContent = c.initial;
+      document.getElementById('detail-name').textContent = c.name;
+      document.getElementById('detail-desc').textContent = c.desc;
+      document.getElementById('detail-tags').innerHTML = `<span class="tag">${c.region}</span><span class="tag">${c.industry}</span>`;
+      document.getElementById('detail-roadmaps').innerHTML = r.map(x => renderRoadmap(x)).join('');
+    }
+    
+    // 筛选 roadmap
+    function filterRoadmap(line) {
+      document.querySelectorAll('.filter button').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      const items = line === 'all' 
+        ? roadmaps.map(x => renderRoadmap(x)).join('')
+        : roadmaps.filter(x => x.line === line).map(x => renderRoadmap(x)).join('');
+      
+      document.getElementById('roadmap-list').innerHTML = items || '<p style="color: #888;">暂无数据</p>';
+    }
+    
+    // 初始化
+    document.getElementById('company-grid').innerHTML = companies.map(renderCompany).join('');
+    document.getElementById('all-companies').innerHTML = companies.map(renderCompany).join('');
+    document.getElementById('recent-roadmaps').innerHTML = roadmaps.map(renderRoadmap).join('');
+    document.getElementById('roadmap-list').innerHTML = roadmaps.map(renderRoadmap).join('');
+  </script>
+</body>
 </html>
